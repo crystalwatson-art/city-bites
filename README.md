@@ -213,10 +213,10 @@ City Bites uses **two kinds of freshness**:
 ### Annual schedule
 
 - **Cadence:** Once every year
-- **Review date:** August 9
+- **Review date:** February 15
 - **Timezone:** America/New_York
 - **Last completed review:** August 9, 2026
-- **Next scheduled review:** August 9, 2027
+- **Next scheduled review:** February 15, 2027
 
 The schedule is also stored in machine-readable form at [`data/annual-update-schedule.json`](data/annual-update-schedule.json).
 
