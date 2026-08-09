@@ -203,6 +203,39 @@ City Bites should continue to follow these rules as it grows:
 7. **Keep the interface accessible.** Maintain keyboard navigation, responsive layouts, readable text, and light/dark mode.
 8. **Verify before publishing strong claims.** Closure reasons, reopening dates, and current operating status should be supported by reliable records.
 
+## Annual data maintenance
+
+City Bites uses **two kinds of freshness**:
+
+1. **Live restaurant search data.** Normal restaurant searches query NYC Open Data at the time of the search, so those results are not limited to a once-a-year static file.
+2. **Annual research review.** At least once every year, Nova and Python should recalculate and review the research statistics, historical case-study facts, violation categories, official grading/status rules, and public-facing freshness dates.
+
+### Annual schedule
+
+- **Cadence:** Once every year
+- **Review date:** August 9
+- **Timezone:** America/New_York
+- **Last completed review:** August 9, 2026
+- **Next scheduled review:** August 9, 2027
+
+The schedule is also stored in machine-readable form at [`data/annual-update-schedule.json`](data/annual-update-schedule.json).
+
+The Python review script is stored at [`scripts/annual_data_review.py`](scripts/annual_data_review.py). It pulls official NYC DOHMH data, groups violation rows into inspection-level records, recomputes the score-50 counts and selected 41–60 point violation comparisons, and writes a review snapshot to `data/annual_research_snapshot.json` when run.
+
+### Required annual review steps
+
+- Run the Python annual-review script against the official NYC dataset.
+- Compare the newly calculated statistics with the currently published City Bites numbers.
+- Investigate meaningful changes before replacing public claims.
+- Recheck the Don Alex and La Dinastia historical records and any statements about current operating/reopening status.
+- Recheck NYC grading, closure, and inspection-process rules for policy changes.
+- Review plain-language violation mappings in case NYC wording or schema changed.
+- Update the README, research snapshot, and the app's visible **Data freshness** notice.
+- Commit approved changes to GitHub `main`.
+- Verify that the automatic Vercel production deployment completes successfully.
+
+The production app displays both the **last annual research review date** and the **next scheduled annual review date**. This should not be confused with the live restaurant-search feed, which continues to query NYC Open Data when users search.
+
 ## Data source
 
 City Bites uses the [DOHMH New York City Restaurant Inspection Results](https://data.cityofnewyork.us/Health/DOHMH-New-York-City-Restaurant-Inspection-Results/43nn-pn8j/about_data) dataset.
