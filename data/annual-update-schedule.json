@@ -1,0 +1,21 @@
+{
+  "project": "City Bites",
+  "cadence": "annual",
+  "timezone": "America/New_York",
+  "review_month": 8,
+  "review_day": 9,
+  "preferred_time": "09:00",
+  "last_completed_review": "2026-08-09",
+  "next_scheduled_review": "2027-08-09",
+  "live_data_note": "Restaurant searches query NYC Open Data live. The annual review refreshes research snapshots, case-study facts, violation summaries, official grading/status rules, and visible freshness dates.",
+  "annual_review_scope": [
+    "Recompute the score-50 initial-inspection counts from official NYC DOHMH Open Data",
+    "Recompute the 41-60 point selected-violation comparison with Python",
+    "Recheck official NYC restaurant grading and inspection-process rules",
+    "Recheck Don Alex and La Dinastia case-study records and current-status claims before publishing them as current facts",
+    "Review plain-language violation mappings for wording or schema changes",
+    "Update the City Bites README and annual research snapshot",
+    "Update the visible last-reviewed and next-review dates in the app",
+    "Commit changes to GitHub main and verify the Vercel production deployment"
+  ]
+}
