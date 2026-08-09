@@ -8,7 +8,7 @@ button,input,select { font:inherit; }
 button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible { outline:3px solid var(--gold); outline-offset:3px; }
 .site { min-height:100vh; color:var(--ink); background:var(--bg); font-family:var(--font-sans),sans-serif; transition:.25s ease; }
 .top-anchor { display:block; width:0; height:0; }
-.site.light { --ink:#1c1916; --muted:#625c55; --bg:#f5f0e7; --panel:#fffaf2; --panel2:#eee6d9; --line:#cfc5b7; }
+.site.light { --ink:#1c1916; --muted:#5d574f; --bg:#ded6c9; --panel:#eee7dc; --panel2:#d2c8ba; --line:#b5aa9b; }
 .nav-wrap { position:sticky; top:0; z-index:30; border-bottom:1px solid var(--line); background:color-mix(in srgb,var(--bg) 90%,transparent); backdrop-filter:blur(18px); }
 .nav { max-width:1240px; height:74px; margin:auto; padding:0 28px; display:flex; align-items:center; justify-content:space-between; }
 .brand,.nav-links { display:flex; align-items:center; }
