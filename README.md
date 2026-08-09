@@ -32,7 +32,7 @@ npm run dev
 npx next build
 ```
 
-The production site is configured for Vercel through `vercel.json`.
+The production site is configured for Vercel through `vercel.json` and deploys from the `main` branch through Vercel's Git integration.
 
 ## Creator
 
