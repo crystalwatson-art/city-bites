@@ -85,6 +85,14 @@ const evidence = {
   },
 };
 
+const supportingContext = [
+  { label: "Evidence/live mice", closed: 71.1, stayed: 42.1, gap: 29.0 },
+  { label: "Live roaches", closed: 37.7, stayed: 17.7, gap: 20.0 },
+  { label: "Pest-management records", closed: 27.0, stayed: 6.9, gap: 20.1 },
+  { label: "Pest-harboring conditions", closed: 91.8, stayed: 75.2, gap: 16.6 },
+  { label: "Hot/cold holding equipment", closed: 8.8, stayed: 4.5, gap: 4.3 },
+];
+
 function escapeSocrata(value: string) {
   return value.replaceAll("'", "''").replaceAll("%", "");
 }
@@ -330,6 +338,29 @@ export default function Home() {
 
       <section className="story section" id="story">
         <div className="story-intro"><p className="kicker"><span /> Why context matters</p><h2>Same score.<br /><em>Different fate.</em></h2><p>This real comparison is one lesson inside City Bites—not the whole app. It shows why diners should read the grade, findings, date, and enforcement action together.</p></div>
+
+        <figure className="finding-chart" aria-labelledby="context-chart-title" aria-describedby="context-chart-note">
+          <figcaption>
+            <div><p className="kicker"><span /> Broader pattern</p><h3 id="context-chart-title">Five selected violations appeared more often in high-score inspections that ended in closure.</h3></div>
+            <p>This comparison looks at initial inspections scoring 41–60. Each bar shows the percentage-point difference between the closed group and the group that stayed open.</p>
+          </figcaption>
+
+          <div className="bar-chart" role="img" aria-label="Among 41 to 60 point initial inspections, five selected violation types were more common in closure inspections. The percentage-point gaps were 29.0 for evidence or live mice, 20.0 for live roaches, 20.1 for pest-management record problems, 16.6 for pest-harboring conditions, and 4.3 for inadequate hot or cold holding equipment.">
+            <div className="chart-legend"><span>Closure share minus stayed-open share</span></div>
+            {supportingContext.map(item => (
+              <div className="chart-row" key={item.label}>
+                <strong>{item.label}</strong>
+                <div className="bar-pair">
+                  <div className="bar-track"><span className="bar-fill don-bar" style={{ width: `${(item.gap / 32) * 100}%` }}><b>+{item.gap.toFixed(1)}</b></span></div>
+                </div>
+              </div>
+            ))}
+            <div className="chart-axis" aria-hidden="true"><span>0</span><span>8</span><span>16</span><span>24</span><span>32 percentage points</span></div>
+          </div>
+
+          <p className="chart-note" id="context-chart-note"><strong>What the underlying percentages were:</strong> mice 71.1% closed vs. 42.1% stayed open; roaches 37.7% vs. 17.7%; pest-management record problems 27.0% vs. 6.9%; pest-harboring conditions 91.8% vs. 75.2%; and inadequate hot/cold holding equipment 8.8% vs. 4.5%. This is a pattern, not proof that any one violation caused a closure. That broader pattern is why the two score-50 cases below deserve a closer look.</p>
+        </figure>
+
         <div className="comparison-grid">
           {[evidence.donAlex, evidence.laDinastia].map((item, index) => <article className={index ? "teal" : "coral"} key={item.name}><div className="comparison-top"><span>{item.place}</span><b>{item.outcome}</b></div><strong className="big-score">{item.score}</strong><h3>{item.name}</h3><p>{item.date}</p><div className="comparison-metrics"><span><strong>{item.violations.length}</strong> findings</span><span><strong>{item.critical}</strong> marked critical</span></div><details><summary>See every finding in plain English <span>+</span></summary><ol>{item.violations.map(v => <li key={v}>{v}</li>)}</ol><a href={item.officialUrl} target="_blank" rel="noreferrer">Open this exact official record ↗</a></details></article>)}
         </div>
