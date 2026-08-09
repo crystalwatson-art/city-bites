@@ -47,6 +47,21 @@ The surprise must be checked against official evidence and explained to Crystal 
 
 A recurring ChatGPT task named **City Bites Annual Review** is enabled for this yearly review.
 
+## Portfolio synchronization rule
+
+City Bites is a featured portfolio project. An approved City Bites upgrade is **not fully complete** until the matching City Bites entry in Crystal's portfolio has been reviewed and updated when relevant.
+
+After City Bites changes are approved and deployed:
+
+- Review the City Bites project description in the portfolio.
+- Update features, research findings, screenshots or previews, milestones, data-source notes, and technology notes when they changed.
+- Confirm the live City Bites link still works.
+- Keep historical case-study facts separate from current restaurant conditions.
+- Do not copy new annual research statistics or surprising findings into the portfolio until the clean → validate → analyze → brief Crystal → publish process is complete.
+- Verify the portfolio accurately represents the latest verified public City Bites version.
+
+The portfolio repository is `crystalwatson-art/Crystal-Portfolio`.
+
 ## Saved maintenance files
 
 - `README.md` — product vision, roadmap, and annual maintenance documentation
@@ -70,4 +85,4 @@ City Bites is intended to grow beyond the original assignment into a trustworthy
 
 ## Deployment continuity
 
-GitHub `main` is the source of truth. Vercel is connected to the City Bites repository and should deploy production updates automatically from `main`. After approved maintenance changes, verify the production deployment and live site before considering the update complete.
+GitHub `main` is the source of truth. Vercel is connected to the City Bites repository and should deploy production updates automatically from `main`. After approved maintenance changes, verify the production deployment and live site, then review the matching portfolio project entry before considering the overall update complete.
