@@ -7,7 +7,7 @@ const serif = Playfair_Display({ variable: "--font-serif", subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "City Bites",
-  description: "Same score. Different fate. A New York City restaurant inspection data story.",
+  description: "Find NYC restaurants with more confidence using clear, plain-language public inspection information.",
   other: { "codex-preview": "development" },
 };
 
