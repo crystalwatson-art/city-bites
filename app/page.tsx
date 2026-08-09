@@ -182,19 +182,11 @@ export default function Home() {
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
   const [light, setLight] = useState(false);
-  const [showBackToTop, setShowBackToTop] = useState(false);
   const [lastSearch, setLastSearch] = useState("Recent A-grade restaurants");
   const searchId = useRef(0);
 
   const totalPages = Math.max(1, Math.ceil(restaurants.length / PAGE_SIZE));
   const visibleRestaurants = useMemo(() => restaurants.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [restaurants, page]);
-
-  useEffect(() => {
-    const update = () => setShowBackToTop(window.scrollY > 500);
-    update();
-    window.addEventListener("scroll", update, { passive: true });
-    return () => window.removeEventListener("scroll", update);
-  }, []);
 
   async function searchRestaurants(next?: { query?: string; borough?: string; cuisine?: string; grade?: string }) {
     const requestId = ++searchId.current;
@@ -259,7 +251,8 @@ export default function Home() {
   }
 
   return (
-    <main className={light ? "site light" : "site"} id="top">
+    <main className={light ? "site light" : "site"}>
+      <span className="top-anchor" id="top" aria-hidden="true" />
       <header className="nav-wrap">
         <nav className="nav" aria-label="Main navigation">
           <a className="brand" href="#top" aria-label="City Bites home"><span className="brand-mark">CB</span><span>City Bites</span></a>
@@ -340,6 +333,40 @@ export default function Home() {
         <div className="comparison-grid">
           {[evidence.donAlex, evidence.laDinastia].map((item, index) => <article className={index ? "teal" : "coral"} key={item.name}><div className="comparison-top"><span>{item.place}</span><b>{item.outcome}</b></div><strong className="big-score">{item.score}</strong><h3>{item.name}</h3><p>{item.date}</p><div className="comparison-metrics"><span><strong>{item.violations.length}</strong> findings</span><span><strong>{item.critical}</strong> marked critical</span></div><details><summary>See every finding in plain English <span>+</span></summary><ol>{item.violations.map(v => <li key={v}>{v}</li>)}</ol><a href={item.officialUrl} target="_blank" rel="noreferrer">Open this exact official record ↗</a></details></article>)}
         </div>
+        <figure className="finding-chart" aria-labelledby="finding-chart-title" aria-describedby="finding-chart-note">
+          <figcaption>
+            <div><p className="kicker"><span /> What the score hides</p><h3 id="finding-chart-title">The same 50-point score did not tell the same story.</h3></div>
+            <p>Both inspections scored 50. Their numbers of cited findings and critical findings were different—and so were their enforcement outcomes.</p>
+          </figcaption>
+
+          <div className="score-tie" aria-label="Both restaurants received an inspection score of 50">
+            <div><span>Don Alex</span><strong>50</strong></div>
+            <div className="tie-line"><span>same score</span></div>
+            <div><span>La Dinastia</span><strong>50</strong></div>
+          </div>
+
+          <div className="bar-chart" role="img" aria-label="Don Alex had 12 total findings and 7 marked critical. La Dinastia had 6 total findings and 4 marked critical.">
+            <div className="chart-legend"><span className="don-key">Don Alex</span><span className="dinastia-key">La Dinastia</span></div>
+            <div className="chart-row">
+              <strong>Total findings</strong>
+              <div className="bar-pair">
+                <div className="bar-track"><span className="bar-fill don-bar" style={{ width: "100%" }}><b>12</b></span></div>
+                <div className="bar-track"><span className="bar-fill dinastia-bar" style={{ width: "50%" }}><b>6</b></span></div>
+              </div>
+            </div>
+            <div className="chart-row">
+              <strong>Marked critical</strong>
+              <div className="bar-pair">
+                <div className="bar-track"><span className="bar-fill don-bar" style={{ width: "58.33%" }}><b>7</b></span></div>
+                <div className="bar-track"><span className="bar-fill dinastia-bar" style={{ width: "33.33%" }}><b>4</b></span></div>
+              </div>
+            </div>
+            <div className="chart-axis" aria-hidden="true"><span>0</span><span>3</span><span>6</span><span>9</span><span>12 findings</span></div>
+          </div>
+
+          <div className="outcome-strip"><div><span>Don Alex</span><strong>Stayed open</strong></div><div><span>La Dinastia</span><strong>Closed by DOHMH</strong></div></div>
+          <p className="chart-note" id="finding-chart-note"><strong>What this proves:</strong> a score alone does not show the full inspection or enforcement story. This graph does not prove why the outcomes differed; that question is part of the pending FOIL investigation.</p>
+        </figure>
         <div className="investigation-status">
           <div><span className="status-pill">Investigation in progress</span><h3>We asked DOHMH what the public data cannot explain.</h3></div>
           <div><p>A FOIL request was submitted and acknowledged on <strong>August 7, 2026</strong>. It was assigned control number <strong>2026FR01025</strong> and sent to Food Safety and Community Sanitation.</p><p>We are waiting for records that may explain why the two 50-point inspections led to different outcomes. City Bites will not claim to know the reason until the records arrive.</p><a href="https://www.nyc.gov/site/doh/about/ogc-foil.page" target="_blank" rel="noreferrer">Current DOHMH records-request page ↗</a></div>
@@ -348,8 +375,11 @@ export default function Home() {
 
       <section className="purpose section"><p className="kicker"><span /> Built for the public</p><h2>Clear facts.<br />Better questions.<br /><em>More confident choices.</em></h2><p>City Bites is for diners, families, community members, journalists, and researchers who want inspection information they can actually understand and use.</p><a className="primary-button" href="#find">Search restaurants ↑</a></section>
 
-      <footer><div><span className="brand-mark">CB</span><strong>City Bites</strong></div><p>Public inspection data, made easier.</p><p>© 2026 Crystal Watson. All rights reserved.</p></footer>
-      <a className={`back-to-top ${showBackToTop ? "visible" : ""}`} href="#top" aria-label="Back to the top of the page" title="Back to top"><span aria-hidden="true">↑</span></a>
+      <footer id="page-bottom"><div><span className="brand-mark">CB</span><strong>City Bites</strong></div><p>Public inspection data, made easier.</p><p>© 2026 Crystal Watson. All rights reserved.</p></footer>
+      <nav className="page-jump" aria-label="Quick page navigation">
+        <a href="#top" aria-label="Go to the top of the page" title="Go to top"><span aria-hidden="true">↑</span></a>
+        <a href="#page-bottom" aria-label="Go to the bottom of the page" title="Go to bottom"><span aria-hidden="true">↓</span></a>
+      </nav>
     </main>
   );
 }
