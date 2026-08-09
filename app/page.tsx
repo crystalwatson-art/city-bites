@@ -216,13 +216,20 @@ export default function Home() {
 
       <section className="investigation section" id="investigation">
         <div className="investigation-copy">
-          <p className="kicker"><span /> The unanswered question</p>
+          <p className="kicker"><span /> Investigation in progress</p>
           <h2>The dataset shows<br />what happened.<br /><em>Not why.</em></h2>
+          <div className="foil-status" aria-label="FOIL request status">
+            <span className="foil-status-label">Request acknowledged</span>
+            <h3>We are waiting for the records.</h3>
+            <p>Crystal Watson submitted a Freedom of Information Law request to NYC Health/DOHMH on August 7, 2026. DOHMH acknowledged the request, assigned control number <strong>2026FR01025</strong>, and forwarded it to Food Safety and Community Sanitation for processing.</p>
+            <p>The requested records may help explain why these two score-50 inspections led to different enforcement outcomes. Until DOHMH responds, City Bites does not claim to know the reason.</p>
+          </div>
         </div>
         <div className="steps">
           <article><span>01</span><div><h3>Public record</h3><p>Compare score, violations, critical flags, and recorded action.</p></div></article>
           <article><span>02</span><div><h3>Find the gap</h3><p>The visible fields do not fully explain the different enforcement outcomes.</p></div></article>
-          <article><span>03</span><div><h3>Request context</h3><p>Use a Freedom of Information Law request to seek the underlying inspection and enforcement records.</p></div></article>
+          <article><span>03</span><div><h3>Request submitted</h3><p>The FOIL request was sent and acknowledged on August 7, 2026.</p></div></article>
+          <article><span>04</span><div><h3>Await the evidence</h3><p>DOHMH is processing the request. The story will be updated when the underlying records arrive.</p></div></article>
         </div>
       </section>
 
