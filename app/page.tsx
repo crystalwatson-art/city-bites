@@ -1,6 +1,52 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+const officialRecordUrl = (camis: string, inspectionDate: string) => {
+  const query = new URLSearchParams({
+    "$select": "dba,building,street,boro,zipcode,inspection_date,score,action,violation_description,critical_flag",
+    "$where": `camis='${camis}' AND inspection_date='${inspectionDate}'`,
+    "$order": "violation_description",
+  });
+  return `https://data.cityofnewyork.us/resource/43nn-pn8j.json?${query.toString()}`;
+};
+
+const restaurantEvidence = {
+  donAlex: {
+    date: "February 5, 2024",
+    address: "106-26 Corona Avenue, Corona, Queens",
+    outcome: "The official action field says violations were cited; it does not record a closure.",
+    officialUrl: officialRecordUrl("50106885", "2024-02-05T00:00:00.000"),
+    violations: [
+      ["Critical", "Cold food was held above the required safe temperature."],
+      ["Critical", "Evidence of mice or live mice was found."],
+      ["Critical", "Evidence of rats or live rats was found."],
+      ["Critical", "Filth flies or other food-, refuse-, or sewage-associated flies were present."],
+      ["Critical", "Food, supplies, or equipment were not protected from contamination."],
+      ["Critical", "Live roaches were present."],
+      ["Critical", "A required hand-washing facility was missing, blocked, inaccessible, or lacked proper water, soap, or hand drying."],
+      ["Not critical", "Drainage, back-flow prevention, sewage disposal, condensation, or liquid-waste handling was inadequate."],
+      ["Not critical", "Conditions allowed rodents, insects, or other pests to harbor."],
+      ["Not critical", "Non-food-contact surfaces or equipment were unsuitable, unclean, or difficult to clean."],
+      ["Not critical", "Pesticide or another toxic chemical was improperly labeled, used, stored, or secured."],
+      ["Not critical", "Single-use items were missing, reused, or not protected from contamination."],
+    ],
+  },
+  laDinastia: {
+    date: "June 3, 2025",
+    address: "145 West 72nd Street, Manhattan",
+    outcome: "The official action field says the establishment was closed by DOHMH.",
+    officialUrl: officialRecordUrl("50032768", "2025-06-03T00:00:00.000"),
+    violations: [
+      ["Critical", "Cold food was held above the required safe temperature."],
+      ["Critical", "Evidence of mice or live mice was found."],
+      ["Critical", "Food, supplies, or equipment were not protected from contamination."],
+      ["Critical", "Live roaches were present."],
+      ["Not critical", "Conditions allowed rodents, insects, or other pests to harbor."],
+      ["Not critical", "Non-food-contact surfaces or equipment were unsuitable, unclean, or difficult to clean."],
+    ],
+  },
+};
 
 const lenses = {
   score: {
@@ -25,6 +71,14 @@ type Lens = keyof typeof lenses;
 export default function Home() {
   const [lens, setLens] = useState<Lens>("score");
   const [light, setLight] = useState(false);
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
+  useEffect(() => {
+    const updateBackToTop = () => setShowBackToTop(window.scrollY > 450);
+    updateBackToTop();
+    window.addEventListener("scroll", updateBackToTop, { passive: true });
+    return () => window.removeEventListener("scroll", updateBackToTop);
+  }, []);
 
   const scrollToStory = () =>
     document.getElementById("comparison")?.scrollIntoView({ behavior: "smooth" });
@@ -76,7 +130,7 @@ export default function Home() {
             <div className="card-topline"><span>Queens</span><span className="status open">Stayed open</span></div>
             <div className="score-row"><span>Inspection score</span><strong>50</strong></div>
             <h3>Don Alex</h3>
-            <p>Woodside, Queens</p>
+            <p>Corona, Queens · February 5, 2024</p>
             <div className="metrics">
               <div><strong>12</strong><span>distinct violation codes</span></div>
               <div><strong>7</strong><span>marked critical</span></div>
@@ -90,7 +144,7 @@ export default function Home() {
             <div className="card-topline"><span>Manhattan</span><span className="status closed">Closed</span></div>
             <div className="score-row"><span>Inspection score</span><strong>50</strong></div>
             <h3>La Dinastia</h3>
-            <p>Upper Manhattan</p>
+            <p>West 72nd Street, Manhattan · June 3, 2025</p>
             <div className="metrics">
               <div><strong>6</strong><span>distinct violation codes</span></div>
               <div><strong>4</strong><span>marked critical</span></div>
@@ -99,6 +153,40 @@ export default function Home() {
           </article>
         </div>
         <p className="surprise"><span>The surprise:</span> The restaurant with more cited problems stayed open.</p>
+      </section>
+
+      <section className="evidence section" id="evidence" aria-labelledby="evidence-title">
+        <div className="section-heading evidence-heading">
+          <p className="kicker"><span /> The exact findings</p>
+          <h2 id="evidence-title">See what inspectors<br />actually cited.</h2>
+          <p>No code numbers or letters. These are plain-English summaries of every violation description attached to each score-50 inspection in the official dataset.</p>
+        </div>
+        <div className="evidence-grid">
+          {([
+            ["Don Alex", restaurantEvidence.donAlex, "coral"],
+            ["La Dinastia", restaurantEvidence.laDinastia, "teal"],
+          ] as const).map(([name, record, color]) => (
+            <article className={`evidence-card ${color}`} key={name}>
+              <div className="evidence-card-heading">
+                <div><p>{record.date}</p><h3>{name}</h3><span>{record.address}</span></div>
+                <strong>50</strong>
+              </div>
+              <p className="recorded-outcome">{record.outcome}</p>
+              <ul className="violation-list">
+                {record.violations.map(([flag, description]) => (
+                  <li key={description}>
+                    <span className={flag === "Critical" ? "critical" : "not-critical"}>{flag}</span>
+                    <p>{description}</p>
+                  </li>
+                ))}
+              </ul>
+              <a className="official-record" href={record.officialUrl} target="_blank" rel="noreferrer">
+                Open this exact official record <span aria-hidden="true">↗</span>
+              </a>
+            </article>
+          ))}
+        </div>
+        <p className="evidence-note">Source checked against the NYC DOHMH restaurant-inspection dataset. The two inspections occurred on different dates; this comparison asks why the same score can accompany different recorded actions, not whether the cases were simultaneous.</p>
       </section>
 
       <section className="lens-section section" aria-labelledby="lens-title">
@@ -143,12 +231,20 @@ export default function Home() {
         <blockquote>“A restaurant score is a signal.<br /><em>Context makes it a story.</em>”</blockquote>
         <p>Use inspection data as a starting point. Look at recent grades, violation details, enforcement actions, and dates before drawing a conclusion.</p>
         <div className="source-links">
-          <a href="https://data.cityofnewyork.us/Health/DOHMH-New-York-City-Restaurant-Inspection-Results/43nn-pn8j/about_data" target="_blank" rel="noreferrer">Explore the NYC Open Data source ↗</a>
-          <a href="https://www.nyc.gov/site/doh/about/about-doh/foil.page" target="_blank" rel="noreferrer">Learn about DOHMH FOIL requests ↗</a>
+          <a href="#evidence">See the exact findings ↑</a>
+          <a href="https://www.nyc.gov/site/doh/about/ogc-foil.page" target="_blank" rel="noreferrer">Current DOHMH records-request page ↗</a>
         </div>
       </section>
 
       <footer><span>City Bites</span><p>A public-data story by Crystal Watson</p><p>© 2026 Crystal Watson. All rights reserved.</p></footer>
+      <a
+        className={`back-to-top ${showBackToTop ? "visible" : ""}`}
+        href="#top"
+        aria-label="Back to the top of the page"
+        title="Back to top"
+      >
+        <span aria-hidden="true">↑</span>
+      </a>
     </main>
   );
 }
