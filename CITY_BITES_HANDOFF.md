@@ -40,10 +40,10 @@ The surprise must be checked against official evidence and explained to Crystal 
 ## Annual schedule
 
 - Cadence: yearly
-- Date: August 9
+- Date: February 15
 - Time target: 9:00 AM America/New_York
 - Last completed review: August 9, 2026
-- Next scheduled review: August 9, 2027
+- Next scheduled review: February 15, 2027
 
 A recurring ChatGPT task named **City Bites Annual Review** is enabled for this yearly review.
 
