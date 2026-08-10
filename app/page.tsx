@@ -11,6 +11,7 @@ type ApiRow = {
   zipcode?: string;
   cuisine_description?: string;
   inspection_date: string;
+  inspection_type?: string;
   action?: string;
   score?: string;
   grade?: string;
@@ -26,6 +27,7 @@ type Restaurant = {
   zipcode: string;
   cuisine: string;
   inspectionDate: string;
+  inspectionType: string;
   action: string;
   score: number | null;
   grade: string;
@@ -102,8 +104,12 @@ function formatDate(value: string) {
 }
 
 function recordUrl(restaurant: Restaurant) {
-  const where = `camis='${restaurant.camis}' AND inspection_date='${restaurant.inspectionDate}'`;
-  const params = new URLSearchParams({ "$where": where, "$order": "violation_description" });
+  const conditions = [
+    `camis='${restaurant.camis}'`,
+    `inspection_date='${restaurant.inspectionDate}'`,
+  ];
+  if (restaurant.inspectionType) conditions.push(`inspection_type='${restaurant.inspectionType.replaceAll("'", "''")}'`);
+  const params = new URLSearchParams({ "$where": conditions.join(" AND "), "$order": "violation_description" });
   return `${API}?${params.toString()}`;
 }
 
@@ -131,12 +137,27 @@ function mapUrl(restaurant: Restaurant) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${restaurant.name}, ${restaurant.address}, New York, NY ${restaurant.zipcode}`)}`;
 }
 
+function isGradeScoreConsistent(grade: string, score: number | null) {
+  if (score === null) return false;
+  if (grade === "A") return score >= 0 && score <= 13;
+  if (grade === "B") return score >= 14 && score <= 27;
+  if (grade === "C") return score >= 28;
+  return true;
+}
+
 function groupLatest(rows: ApiRow[]): Restaurant[] {
-  const grouped = new Map<string, Restaurant>();
+  const inspections = new Map<string, Restaurant>();
+
   for (const row of rows) {
-    const existing = grouped.get(row.camis);
-    if (!existing) {
-      grouped.set(row.camis, {
+    const grade = row.grade || "Not graded";
+    const score = row.score === undefined || row.score === "" ? null : Number(row.score);
+    if (!isGradeScoreConsistent(grade, score)) continue;
+
+    const inspectionType = row.inspection_type || "";
+    const key = [row.camis, row.inspection_date, inspectionType, grade, row.score || "", row.action || ""].join("|");
+
+    if (!inspections.has(key)) {
+      inspections.set(key, {
         camis: row.camis,
         name: row.dba || "Unnamed restaurant",
         borough: row.boro || "New York City",
@@ -144,18 +165,38 @@ function groupLatest(rows: ApiRow[]): Restaurant[] {
         zipcode: row.zipcode || "",
         cuisine: row.cuisine_description || "Not listed",
         inspectionDate: row.inspection_date,
+        inspectionType,
         action: row.action || "No action listed",
-        score: row.score ? Number(row.score) : null,
-        grade: row.grade || "Not graded",
+        score,
+        grade,
         violations: [],
       });
     }
-    const current = grouped.get(row.camis)!;
-    if (row.inspection_date === current.inspectionDate && row.violation_description && !current.violations.some(v => v.description === row.violation_description)) {
-      current.violations.push({ description: simplifyViolation(row.violation_description), critical: row.critical_flag === "Critical" });
+
+    const inspection = inspections.get(key)!;
+    if (row.violation_description) {
+      const description = simplifyViolation(row.violation_description);
+      if (!inspection.violations.some(v => v.description === description)) {
+        inspection.violations.push({ description, critical: row.critical_flag === "Critical" });
+      }
     }
   }
-  return [...grouped.values()].sort((a, b) => (a.score ?? 999) - (b.score ?? 999) || a.name.localeCompare(b.name));
+
+  const latestByRestaurant = new Map<string, Restaurant>();
+  const orderedInspections = [...inspections.values()].sort((a, b) => {
+    const dateDifference = new Date(b.inspectionDate).getTime() - new Date(a.inspectionDate).getTime();
+    if (dateDifference) return dateDifference;
+    return b.violations.length - a.violations.length;
+  });
+
+  for (const inspection of orderedInspections) {
+    if (!latestByRestaurant.has(inspection.camis)) latestByRestaurant.set(inspection.camis, inspection);
+  }
+
+  return [...latestByRestaurant.values()].sort((a, b) => {
+    const dateDifference = new Date(b.inspectionDate).getTime() - new Date(a.inspectionDate).getTime();
+    return dateDifference || a.name.localeCompare(b.name);
+  });
 }
 
 function gradeMessage(restaurant: Restaurant) {
@@ -206,8 +247,11 @@ export default function Home() {
     setError("");
     setPage(1);
     try {
-      const conditions = ["grade IS NOT NULL"];
-      if (g !== "all") conditions.push(`grade='${escapeSocrata(g)}'`);
+      const conditions = ["grade IS NOT NULL", "score IS NOT NULL"];
+      if (g === "A") conditions.push("grade='A' AND score BETWEEN 0 AND 13");
+      else if (g === "B") conditions.push("grade='B' AND score BETWEEN 14 AND 27");
+      else if (g === "C") conditions.push("grade='C' AND score >= 28");
+      else conditions.push("((grade='A' AND score BETWEEN 0 AND 13) OR (grade='B' AND score BETWEEN 14 AND 27) OR (grade='C' AND score >= 28))");
       if (b) conditions.push(`boro='${escapeSocrata(b)}'`);
       if (c) conditions.push(`cuisine_description='${escapeSocrata(c)}'`);
       if (q.trim()) {
@@ -215,10 +259,10 @@ export default function Home() {
         conditions.push(/^\d{5}$/.test(safe) ? `zipcode='${safe}'` : `upper(dba) like '%${safe}%'`);
       }
       const params = new URLSearchParams({
-        "$select": "camis,dba,boro,building,street,zipcode,cuisine_description,inspection_date,action,score,grade,violation_description,critical_flag",
+        "$select": "camis,dba,boro,building,street,zipcode,cuisine_description,inspection_date,inspection_type,action,score,grade,violation_description,critical_flag",
         "$where": conditions.join(" AND "),
         "$order": "inspection_date DESC",
-        "$limit": "1200",
+        "$limit": "2400",
       });
       const response = await fetch(`${API}?${params.toString()}`);
       if (!response.ok) throw new Error("The NYC data service did not answer.");
@@ -314,7 +358,7 @@ export default function Home() {
         {error && <div className="empty-state"><strong>No plates on this table yet.</strong><p>{error}</p></div>}
         {!loading && visibleRestaurants.length > 0 && <div className="result-grid">
           {visibleRestaurants.map(restaurant => (
-            <article className="result-card" key={restaurant.camis}>
+            <article className="result-card" key={`${restaurant.camis}-${restaurant.inspectionDate}-${restaurant.inspectionType}`}>
               <div className="result-card-top"><div className={`grade grade-${restaurant.grade.toLowerCase()}`} aria-label={`Grade ${restaurant.grade}`}>{restaurant.grade}</div><div><span>{restaurant.cuisine}</span><h3>{restaurant.name}</h3><p>{restaurant.address}<br />{restaurant.borough}, NY {restaurant.zipcode}</p></div></div>
               <div className="inspection-summary"><div><span>Latest listed inspection</span><strong>{formatDate(restaurant.inspectionDate)}</strong></div><div><span>Score</span><strong>{restaurant.score ?? "—"}</strong></div></div>
               <p className="signal"><span aria-hidden="true">{restaurant.grade === "A" ? "✓" : "!"}</span><strong>{gradeMessage(restaurant)}</strong></p>
@@ -324,7 +368,7 @@ export default function Home() {
           ))}
         </div>}
         {!loading && restaurants.length > PAGE_SIZE && <Pagination page={page} totalPages={totalPages} onPage={setPage} />}
-        <p className="results-disclaimer">Results show up to 120 restaurants from the newest matching graded inspection records returned by NYC Open Data. Always confirm the posted grade and current operating status at the restaurant.</p>
+        <p className="results-disclaimer">Results show up to 120 restaurants from the newest matching graded inspection records returned by NYC Open Data. Each card keeps the grade, score, action, date, inspection type, and violations from the same inspection record. Always confirm the posted grade and current operating status at the restaurant.</p>
       </section>
 
       <section className="grade-guide section" id="understand">
